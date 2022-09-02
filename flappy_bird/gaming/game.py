@@ -12,7 +12,7 @@ class Game:
         self.closed = False
         self.clock = pygame.time.Clock()
 
-        self.bird = Bird(self.screen, 15, (30, screen_height // 2))
+        self.bird = Bird(self.screen, 15, (60, screen_height // 2))
 
     def run(self):
         while not self.closed:
