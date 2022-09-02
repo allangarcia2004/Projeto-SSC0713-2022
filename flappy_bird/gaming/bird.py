@@ -1,32 +1,37 @@
 from pygame.math import Vector2
-from pygame.surface import Surface
 import pygame
 
 from .colors import Color
+from .world import WorldSharedData
+
+
+class BirdSharedData:
+    def __init__(self, radius: float, bump_speed: float, horizontal_position: int, world_data: WorldSharedData):
+        self.radius = radius
+        self.bump_speed = bump_speed
+        self.horizontal_position = horizontal_position
+        self.world_data = world_data
 
 
 class Bird:
-    GRAVITY = 2.25
-    JUMP_SPEED = -20
-
-    def __init__(self, screen: Surface, radius: float, initial_pos: tuple[int, int],
-                 initial_vel: tuple[int, int] = (0, 0)):
-        self.radius = radius
-        self.screen = screen
-        self.pos = Vector2(initial_pos)
-        self.vel = Vector2(initial_vel)
-        self.died = False
+    def __init__(self, shared_data: BirdSharedData):
+        self.shared_data = shared_data
+        self.pos = Vector2(self.shared_data.horizontal_position, self.shared_data.world_data.screen_size.y // 2)
+        self.vel = Vector2(0, 0)
+        self.dead = False
 
     def update(self):
-        self.vel.y += Bird.GRAVITY
+        if not self.dead:
+            self.vel.y += self.shared_data.world_data.gravity
         self.pos += self.vel
 
     def draw(self):
-        pygame.draw.circle(self.screen, Color.YELLOW, self.pos, self.radius)
+        pygame.draw.circle(self.shared_data.world_data.screen, Color.YELLOW, self.pos, self.shared_data.radius)
 
     def jump(self):
-        self.vel.y = Bird.JUMP_SPEED
+        self.vel.y = -self.shared_data.bump_speed
 
     def verify_death(self, screen_height: float):
-        if self.pos.y - self.radius <= 0 or self.pos.y + self.radius >= screen_height:
-            self.died = True
+        if self.pos.y - self.shared_data.radius <= 0 or self.pos.y + self.shared_data.radius >= screen_height:
+            self.dead = True
+            self.vel = Vector2(-self.shared_data.world_data.horizontal_speed, 0)
