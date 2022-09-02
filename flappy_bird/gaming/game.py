@@ -1,4 +1,5 @@
 import pygame
+from pygame.math import Vector2
 
 from .bird import Bird
 from .colors import Color
@@ -6,7 +7,7 @@ from .colors import Color
 
 class Game:
     def __init__(self, screen_width: int, screen_height: int):
-        self.screen_size = (screen_width, screen_height)
+        self.screen_size = Vector2(screen_width, screen_height)
         self.screen = pygame.display.set_mode(self.screen_size)
 
         self.closed = False
@@ -15,7 +16,7 @@ class Game:
         self.bird = Bird(self.screen, 15, (60, screen_height // 2))
 
     def run(self):
-        while not self.closed:
+        while not self.closed and not self.bird.died:
             self.clock.tick(30)
 
             for event in pygame.event.get():
@@ -27,6 +28,7 @@ class Game:
 
             self.screen.fill(Color.BLACK)
 
+            self.bird.verify_death(self.screen_size.y)
             self.bird.update()
             self.bird.draw()
 

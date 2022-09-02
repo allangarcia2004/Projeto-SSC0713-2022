@@ -15,6 +15,7 @@ class Bird:
         self.screen = screen
         self.pos = Vector2(initial_pos)
         self.vel = Vector2(initial_vel)
+        self.died = False
 
     def update(self):
         self.vel.y += Bird.GRAVITY
@@ -25,3 +26,7 @@ class Bird:
 
     def jump(self):
         self.vel.y = Bird.JUMP_SPEED
+
+    def verify_death(self, screen_height: float):
+        if self.pos.y - self.radius <= 0 or self.pos.y + self.radius >= screen_height:
+            self.died = True
