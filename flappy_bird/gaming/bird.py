@@ -34,4 +34,4 @@ class Bird:
     def verify_death(self, screen_height: float):
         if self.pos.y - self.shared_data.radius <= 0 or self.pos.y + self.shared_data.radius >= screen_height:
             self.dead = True
-            self.vel = Vector2(-self.shared_data.world_data.horizontal_speed, 0)
+            self.vel = Vector2(-self.shared_data.world_data.horizontal_velocity, 0)
