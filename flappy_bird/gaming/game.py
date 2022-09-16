@@ -1,6 +1,6 @@
 import pygame
 from pygame.event import Event
-from pygame.math import Vector2
+from pygame import Vector2
 
 from .bird import Bird, BirdSharedData
 from .colors import Color
@@ -18,7 +18,7 @@ class Game:
 
         self.world_data = WorldSharedData(2.25, 5, self.screen_size, self.screen)
 
-        self.bird_data = BirdSharedData(15.0, 21, 60, self.world_data)
+        self.bird_data = BirdSharedData(15.0, 21, 100, self.world_data)
         self.bird = Bird(self.bird_data)
 
         self.pipe_data = PipeSharedData(40, 140, self.world_data)
@@ -32,6 +32,9 @@ class Game:
                 self.bird.jump()
 
     def update(self):
+        if self.pipe.collided_with_bird(self.bird):
+            self.bird.dead = True
+            self.closed = True
         self.bird.verify_death(self.screen_size.y)
         self.bird.update()
         self.pipe.update()

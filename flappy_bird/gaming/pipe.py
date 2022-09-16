@@ -1,9 +1,11 @@
 from random import randint
-
 import pygame
 from pygame.rect import Rect
 
+
+from .collision import collided_circle_rect
 from .colors import Color
+from .bird import Bird
 from .world import WorldSharedData
 
 
@@ -19,6 +21,9 @@ class Pipe:
         self.shared_data = shared_data
         self.x_pos = 0
         self.gap_y_pos = 0
+
+        self.top_rect = self.get_top_rect()
+        self.bottom_rect = self.get_bottom_rect()
 
         self.reset_positions()
 
@@ -38,7 +43,13 @@ class Pipe:
         self.x_pos -= self.shared_data.world_data.horizontal_velocity
         if self.x_pos + self.shared_data.width < 0:
             self.reset_positions()
+        self.top_rect = self.get_top_rect()
+        self.bottom_rect = self.get_bottom_rect()
 
     def draw(self):
-        pygame.draw.rect(self.shared_data.world_data.screen, Color.WHITE, self.get_top_rect())
-        pygame.draw.rect(self.shared_data.world_data.screen, Color.WHITE, self.get_bottom_rect())
+        pygame.draw.rect(self.shared_data.world_data.screen, Color.WHITE, self.top_rect)
+        pygame.draw.rect(self.shared_data.world_data.screen, Color.WHITE, self.bottom_rect)
+
+    def collided_with_bird(self,bird: Bird):
+        return collided_circle_rect(bird.pos, bird.shared_data.radius, self.top_rect) or \
+               collided_circle_rect(bird.pos, bird.shared_data.radius, self.bottom_rect) 
