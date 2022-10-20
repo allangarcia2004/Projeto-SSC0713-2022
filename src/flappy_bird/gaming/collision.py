@@ -1,4 +1,5 @@
-from pygame import Vector2, Rect
+from pygame import Rect, Vector2
+
 
 def collided_circle_rect(circle_center: Vector2, circle_radius: float, rectangle: Rect):
     collision_edge_x = circle_center.x

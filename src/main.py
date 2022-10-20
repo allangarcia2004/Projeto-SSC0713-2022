@@ -1,5 +1,6 @@
-from flappy_bird.gaming import Game
 import pygame
+
+from flappy_bird.gaming import Game
 
 pygame.init()
 

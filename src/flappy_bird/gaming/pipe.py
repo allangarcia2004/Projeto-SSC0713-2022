@@ -1,12 +1,10 @@
 from random import randint
+
 import pygame
-from pygame.rect import Rect
+from pygame import Rect
 
-
-from .collision import collided_circle_rect
-from .colors import Color
-from .bird import Bird
-from .world import WorldSharedData
+from flappy_bird.gaming.colors import Color
+from flappy_bird.gaming.world import WorldSharedData
 
 
 class PipeSharedData:
@@ -17,6 +15,8 @@ class PipeSharedData:
 
 
 class Pipe:
+    MIN_LENGTH = 50
+
     def __init__(self, shared_data: PipeSharedData):
         self.shared_data = shared_data
         self.x_pos = 0
@@ -29,7 +29,9 @@ class Pipe:
 
     def reset_positions(self):
         self.x_pos = self.shared_data.world_data.screen_size.x
-        self.gap_y_pos = randint(0, self.shared_data.world_data.screen_size.y - self.shared_data.gap_size)
+        self.gap_y_pos = randint(
+            self.MIN_LENGTH, self.shared_data.world_data.screen_size.y - self.shared_data.gap_size - self.MIN_LENGTH
+        )
 
     def get_top_rect(self):
         return Rect(self.x_pos, 0, self.shared_data.width, self.gap_y_pos)
@@ -49,7 +51,3 @@ class Pipe:
     def draw(self):
         pygame.draw.rect(self.shared_data.world_data.screen, Color.WHITE, self.top_rect)
         pygame.draw.rect(self.shared_data.world_data.screen, Color.WHITE, self.bottom_rect)
-
-    def collided_with_bird(self,bird: Bird):
-        return collided_circle_rect(bird.pos, bird.shared_data.radius, self.top_rect) or \
-               collided_circle_rect(bird.pos, bird.shared_data.radius, self.bottom_rect) 
