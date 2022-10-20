@@ -1,3 +1,4 @@
+import pickle
 import random
 from typing import Iterable, Sequence, Callable, List, Tuple
 
@@ -7,6 +8,8 @@ from deap import creator, base, tools
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMax)
 
+POPULATION_BACKUP_FILE = "population.backup"
+
 
 class Evolution:
     def __init__(
@@ -15,6 +18,7 @@ class Evolution:
             population_size: int,
             crossover_probability: float,
             mutation_probability: float,
+            use_backup: bool
     ):
         self.genes_count_by_individual = genes_count_by_individual
         self.population_size = population_size
@@ -41,7 +45,18 @@ class Evolution:
         self.toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=1, indpb=1)
         self.toolbox.register("select", tools.selTournament)
 
-        self.population = self.toolbox.get_initial_population()
+        if use_backup:
+            self.load_population_from_file()
+        else:
+            self.population = self.toolbox.get_initial_population()
+
+    def load_population_from_file(self):
+        with open(POPULATION_BACKUP_FILE, "rb") as file:
+            self.population = pickle.load(file)
+
+    def save_population_to_file(self):
+        with open(POPULATION_BACKUP_FILE, "wb") as file:
+            pickle.dump(self.population, file)
 
     def set_fitnesses_on_individuals(self, fitness_values: Iterable[float]):
         for individual, fitness_value in zip(self.population, fitness_values):
@@ -55,6 +70,8 @@ class Evolution:
         return best
 
     def run_generation(self):
+        self.save_population_to_file()
+
         # Select the next generation individuals
         offspring = self.toolbox.select(
             self.population, len(self.population) - 1, len(self.population) // 10
@@ -85,7 +102,7 @@ class PlayersPopulation:
     JUMP_THRESHOLD = 0.5
 
     def __init__(self, individuals_count_by_generation: int, neurons_disposition: Sequence[int],
-                 activation_functions: Sequence[Callable]):
+                 activation_functions: Sequence[Callable], use_backup: bool):
         self.individuals_count_by_generation = individuals_count_by_generation
         self.neurons_disposition = neurons_disposition
         self.activation_functions = activation_functions
@@ -103,7 +120,7 @@ class PlayersPopulation:
             self.biases_lengths.append(size_layer_out)
 
         self.evolution = Evolution(genes_count_by_individual, self.individuals_count_by_generation,
-                                   mutation_probability=0.2, crossover_probability=0.2)
+                                   mutation_probability=0.2, crossover_probability=0.2, use_backup=use_backup)
 
         self.weights: List[np.ndarray] = []
         self.biases: List[np.ndarray] = []

@@ -1,8 +1,14 @@
 import pygame
+import argparse
 
 from flappy_bird.gaming import Game
 
-pygame.init()
+parser = argparse.ArgumentParser(description='FlappyBird Genético.')
+parser.add_argument('--use-backup', action='store_true')
+args = parser.parse_args()
 
-game = Game(450, 800)
+pygame.init()
+pygame.font.init()
+
+game = Game(450, 800, args.use_backup)
 game.run()

@@ -25,10 +25,11 @@ class Pipe:
         self.top_rect = self.get_top_rect()
         self.bottom_rect = self.get_bottom_rect()
 
+        self.initial_position = self.shared_data.world_data.screen_size.x
         self.reset_positions()
 
     def reset_positions(self):
-        self.x_pos = self.shared_data.world_data.screen_size.x
+        self.x_pos = self.initial_position
         self.gap_y_pos = randint(
             self.MIN_LENGTH,
             int(self.shared_data.world_data.screen_size.y - self.shared_data.gap_size - self.MIN_LENGTH))

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 
 import pygame
 from pygame import Vector2
@@ -13,30 +13,35 @@ from flappy_bird.neural_network.activation_functions import identity
 
 
 class Game:
-    def __init__(self, screen_width: int, screen_height: int):
+    def __init__(self, screen_width: int, screen_height: int, use_backup: bool):
         self.screen_size = Vector2(screen_width, screen_height)
         self.screen = pygame.display.set_mode(self.screen_size)
+        self.font = pygame.font.SysFont('Comic Sans MS', 30)
 
         self.closed = False
         self.clock = pygame.time.Clock()
 
-        self.birds_count = 1000
+        self.birds_count = 900
 
         self.world_data = WorldSharedData(2.25, 5, self.screen_size, self.screen)
         self.bird_data = BirdSharedData(15.0, 21, 100, self.world_data)
         self.pipe_data = PipeSharedData(40, 140, self.world_data)
 
         self.players_population = PlayersPopulation(
-            self.birds_count, [2, 3, 1], [identity, identity]
+            self.birds_count, [2, 3, 1], [identity, identity], use_backup=use_backup
         )
 
         self.alive_birds_count: int = None
+        self.max_score: int = None
+        self.max_pipes_bypassed: int = None
         self.birds: List[Bird] = None
         self.pipe: Pipe = None
         self.bird_scores: List[int] = None
 
     def reset_generation(self):
         self.alive_birds_count = self.birds_count
+        self.max_score = 0
+        self.max_pipes_bypassed = 0
         self.birds = [Bird(self.bird_data) for _ in range(self.birds_count)]
         self.pipe = Pipe(self.pipe_data)
         self.bird_scores = [0 for _ in range(self.birds_count)]
@@ -57,9 +62,16 @@ class Game:
                     if self.players_population.should_jump(index):
                         bird.jump()
                     self.bird_scores[index] += 1
+                    self.max_score = max(self.max_score, self.bird_scores[index])
             bird.update()
 
+        if self.pipe.x_pos == self.pipe.initial_position:
+            self.max_pipes_bypassed += 1
         self.pipe.update()
+
+    def render_text(self, text: str, position: Tuple[int, int]):
+        text_surface = self.font.render(text, False, Color.WHITE, Color.BLACK)
+        self.screen.blit(text_surface, position)
 
     def draw(self):
         self.screen.fill(Color.BLACK)
@@ -68,6 +80,11 @@ class Game:
             bird.draw()
 
         self.pipe.draw()
+
+        self.render_text(f"Max Score: {self.max_score}", (10, 10))
+        self.render_text(f"Max Pipes Bypassed: {self.max_pipes_bypassed}", (10, 40))
+        self.render_text(f"Birds Alive: {self.alive_birds_count}", (10, 70))
+
         pygame.display.flip()
 
     def run_generation(self, draw: bool):
