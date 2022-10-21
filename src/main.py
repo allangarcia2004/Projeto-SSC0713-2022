@@ -1,5 +1,6 @@
-import pygame
 import argparse
+
+import pygame
 
 from flappy_bird.gaming import Game
 

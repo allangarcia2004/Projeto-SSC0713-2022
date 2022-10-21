@@ -1,9 +1,9 @@
 import pickle
 import random
-from typing import Iterable, Sequence, Callable, List, Tuple
+from typing import Callable, Iterable, List, Sequence, Tuple
 
 import numpy as np
-from deap import creator, base, tools
+from deap import base, creator, tools
 
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMax)
