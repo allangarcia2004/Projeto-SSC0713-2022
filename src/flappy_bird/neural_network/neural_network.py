@@ -2,7 +2,7 @@ from typing import Callable, List, Sequence, Tuple
 
 import numpy as np
 
-from src.flappy_bird.neural_network.evolution import Evolution
+from flappy_bird.neural_network.evolution import Evolution
 
 
 def get_slice(sequence: Sequence, first_index: int, length: int):
