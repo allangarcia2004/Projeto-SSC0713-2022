@@ -1,7 +1,6 @@
 import pickle
 from typing import List, Tuple
 
-import keyboard
 import numpy as np
 import pygame
 from pygame import Vector2
@@ -46,19 +45,6 @@ class Game:
         self.closed = False
         self.should_draw = True
 
-        keyboard.add_hotkey("k", self.toggle_wait_for_clock)
-        keyboard.add_hotkey("q", self.close)
-        keyboard.add_hotkey("d", self.toggle_draw)
-
-    def toggle_draw(self):
-        self.should_draw = not self.should_draw
-
-    def close(self):
-        self.closed = True
-
-    def toggle_wait_for_clock(self):
-        self.wait_for_clock = not self.wait_for_clock
-
     def reset_generation(self):
         self.alive_birds_count = self.birds_count
         self.max_score = 0
@@ -70,6 +56,13 @@ class Game:
     def handle_event(self, event: Event):
         if event.type == pygame.QUIT:
             self.closed = True
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_q:
+                self.closed = True
+            if event.key == pygame.K_k:
+                self.wait_for_clock = not self.wait_for_clock
+            if event.key == pygame.K_d:
+                self.should_draw = not self.should_draw
 
     def update(self):
         neural_inputs = self.get_neural_inputs()
@@ -140,7 +133,7 @@ class Game:
 
             max_score = max(self.bird_scores)
             generation_count += 1
-            print(f"Finished generation #{generation_count}. Max score: {max_score}")
+            print(f"Finished generation #{generation_count}. Max score: {max_score}.")
 
         with open("statistics_by_generation.pickle", "wb") as file:
             pickle.dump(self.statistics_data, file)
