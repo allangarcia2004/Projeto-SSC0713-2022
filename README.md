@@ -12,7 +12,7 @@
 
 3. Crie um ambiente virtual para não interferir com as dependências de outros projetos:
 
-    `python -m venv venv `
+    `python3 -m venv venv `
 
 4. Ative o ambiente virtual:
 
