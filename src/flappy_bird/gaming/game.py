@@ -1,5 +1,5 @@
 import pickle
-from typing import List, Tuple
+from typing import List, Tuple, Sequence
 
 import numpy as np
 import pygame
@@ -15,7 +15,8 @@ from flappy_bird.neural_network.activation_functions import identity
 
 
 class Game:
-    def __init__(self, screen_width: int, screen_height: int, use_backup: bool):
+    def __init__(self, screen_width: int, screen_height: int, population,
+                 population_size: int, neurons_disposition: Sequence[int]):
         self.screen_size = Vector2(screen_width, screen_height)
         self.screen = pygame.display.set_mode(self.screen_size)
         self.font = pygame.font.SysFont('Comic Sans MS', 30)
@@ -23,14 +24,14 @@ class Game:
         self.closed = False
         self.clock = pygame.time.Clock()
 
-        self.birds_count = 900
+        self.birds_count = population_size
 
         self.world_data = WorldSharedData(2.25, 5, self.screen_size, self.screen)
         self.bird_data = BirdSharedData(15.0, 21, 100, self.world_data)
         self.pipe_data = PipeSharedData(40, 140, self.world_data)
 
         self.players_population = PlayersPopulation(
-            self.birds_count, [2, 3, 1], [identity, identity], use_backup=use_backup
+            population_size, neurons_disposition, [identity, identity], population
         )
 
         self.alive_birds_count: int = None
@@ -52,17 +53,6 @@ class Game:
         self.birds = [Bird(self.bird_data) for _ in range(self.birds_count)]
         self.pipe = Pipe(self.pipe_data)
         self.bird_scores = [0 for _ in range(self.birds_count)]
-
-    def handle_event(self, event: Event):
-        if event.type == pygame.QUIT:
-            self.closed = True
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_q:
-                self.closed = True
-            if event.key == pygame.K_k:
-                self.wait_for_clock = not self.wait_for_clock
-            if event.key == pygame.K_d:
-                self.should_draw = not self.should_draw
 
     def update(self):
         neural_inputs = self.get_neural_inputs()
@@ -105,8 +95,6 @@ class Game:
         while not self.closed:
             if self.wait_for_clock:
                 self.clock.tick(60)
-            for event in pygame.event.get():
-                self.handle_event(event)
 
             self.update()
             if self.alive_birds_count == 0:
@@ -115,28 +103,10 @@ class Game:
             if self.should_draw:
                 self.draw()
 
-    def run(self):
-        generation_count = 0
-        while not self.closed:
-            self.reset_generation()
-            self.run_generation()
-
-            self.players_population.evolution.set_fitnesses_on_individuals(self.bird_scores)
-            self.players_population.evolution.run_generation()
-            self.players_population.update_weights_and_biases_from_evolution()
-
-            generation_data = {
-                "median": np.median(self.bird_scores), "average": np.average(self.bird_scores),
-                "std": np.std(self.bird_scores), "max": np.max(self.bird_scores), "min": np.min(self.bird_scores)
-            }
-            self.statistics_data.append(generation_data)
-
-            max_score = max(self.bird_scores)
-            generation_count += 1
-            print(f"Finished generation #{generation_count}. Max score: {max_score}.")
-
-        with open("statistics_by_generation.pickle", "wb") as file:
-            pickle.dump(self.statistics_data, file)
+    def run(self, population):
+        self.players_population.update_weights_and_biases_from_evolution(population)
+        self.reset_generation()
+        self.run_generation()
 
     def get_neural_input(self, bird: Bird):
         x = self.pipe.top_rect.left - bird.pos.x
