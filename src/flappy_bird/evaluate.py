@@ -2,7 +2,6 @@ import pygame
 from flappy_bird.gaming.game import Game
 from pygame.event import Event
 from typing import Sequence
-import numpy as np
 
 
 class Evaluate:
@@ -30,7 +29,12 @@ class Evaluate:
 
         #print(np.shape(population))
         #print(np.shape(self.game.bird_scores))
-        for individual, fitness_value in zip(population, self.game.bird_scores):
-            individual.fitness.values = (fitness_value,)
+        #for individual, fitness_value in zip(population, self.game.bird_scores):
+        #    individual.fitness.values = (fitness_value,)
 
+        fitnesses = []
+        for fitness_value in self.game.bird_scores:
+            fitnesses.append( (fitness_value,) )
+
+        return fitnesses
 
