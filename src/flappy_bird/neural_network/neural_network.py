@@ -11,13 +11,11 @@ def get_slice(sequence: Sequence, first_index: int, length: int):
 class PlayersPopulation:
     JUMP_THRESHOLD = 0.5
 
-    def __init__(self, individuals_count_by_generation: int, neurons_disposition: Sequence[int],
-                 activation_functions: Sequence[Callable], population):
-        self.individuals_count_by_generation = individuals_count_by_generation
+    def __init__(self, neurons_disposition: Sequence[int],
+                 activation_function: Callable):
         self.neurons_disposition = neurons_disposition
-        self.activation_functions = activation_functions
+        self.activation_function = activation_function
 
-        genes_count_by_individual = 0
         self.weights_shapes: List[Tuple[int, int]] = []
         self.biases_lengths: List[int] = []
 
@@ -25,20 +23,8 @@ class PlayersPopulation:
             size_layer_in = int(self.neurons_disposition[i])
             size_layer_out = self.neurons_disposition[i + 1]
 
-            genes_count_by_individual += size_layer_in * size_layer_out + size_layer_out
             self.weights_shapes.append((size_layer_out, size_layer_in))
             self.biases_lengths.append(size_layer_out)
-
-        self.weights: List[np.ndarray] = []
-        self.biases: List[np.ndarray] = []
-        self.update_weights_and_biases_from_evolution(population)
-
-        self.output_layer: np.ndarray = None
-
-        first_input = np.zeros(
-            (self.individuals_count_by_generation, self.neurons_disposition[0])
-        )
-        self.feed_forward(first_input)
 
     def deserialize_arrays_from_individual(self, individual: Sequence[float]):
         individual_weights: List[np.ndarray] = []
@@ -47,7 +33,7 @@ class PlayersPopulation:
         current_index = 0
         for shape in self.weights_shapes:
             slice_length = int(np.prod(shape))
-            genes_slice = get_slice(individual, current_index, slice_length)
+            genes_slice = individual[current_index:current_index+slice_length]
             array = np.reshape(genes_slice, shape)
             individual_weights.append(array)
             current_index += slice_length
@@ -61,28 +47,15 @@ class PlayersPopulation:
 
         return individual_weights, individual_biases
 
-    def update_weights_and_biases_from_evolution(self, population: list):
-        weights: List[List[np.ndarray]] = [[] for _ in range(len(self.weights_shapes))]
-        biases: List[List[np.ndarray]] = [[] for _ in range(len(self.biases_lengths))]
+    def feed_forward(self, individual: Sequence[float], input_data):
+        result = np.reshape(input_data, (self.neurons_disposition[0], 1))
 
-        for individual in population:
-            arrays = self.deserialize_arrays_from_individual(individual)
-            individual_weights, individual_biases = arrays
-            for i in range(len(weights)):
-                weights[i].append(individual_weights[i])
-                biases[i].append(individual_biases[i])
-
-        self.weights = [np.stack(w) for w in weights]
-        self.biases = [np.stack(b) for b in biases]
-
-    def feed_forward(self, input_data: Sequence[Sequence[float]]):
-        result = np.reshape(input_data, (self.individuals_count_by_generation, self.neurons_disposition[0], 1))
-
-        for layer_weights, layer_biases, activation_function in zip(self.weights, self.biases,
-                                                                    self.activation_functions):
+        weights, bias = self.deserialize_arrays_from_individual(individual)
+        for layer_weights, layer_biases, in zip(weights, bias):
             mul = np.matmul(layer_weights, result)
-            result = activation_function(mul + layer_biases)
-        self.output_layer = np.reshape(result, (self.individuals_count_by_generation,))
+            result = self.activation_function(mul + layer_biases)
 
-    def should_jump(self, player_index: int):
-        return self.output_layer[player_index] >= self.JUMP_THRESHOLD
+        return result
+
+    def should_jump(self, individual: Sequence[float], input_data):
+        return self.feed_forward(individual, input_data) >= self.JUMP_THRESHOLD

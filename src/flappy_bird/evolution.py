@@ -1,9 +1,8 @@
 import pickle
 import random
 from typing import Iterable, Sequence
-from deap import base, tools, creator
+from deap import base, tools, creator, algorithms
 from flappy_bird.evaluate import Evaluate
-from flappy_bird.eaSimpleAltered import eaSimpleAltered
 
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMax)
@@ -12,12 +11,9 @@ creator.create("Individual", list, fitness=creator.FitnessMax)
 class Evolution:
     POPULATION_BACKUP_FILE = "population.backup"
 
-    def __init__(self, crossover_probability: float, mutation_probability: float,
-                 use_backup: bool, neurons_disposition: Sequence[int], population_size: int):
+    def __init__(self, use_backup: bool, neurons_disposition: Sequence[int], population_size: int):
 
         self.population_size = population_size
-        self.crossover_probability = crossover_probability
-        self.mutation_probability = mutation_probability
 
         # get genes count by individual
         self.genes_count_by_individual = 0
@@ -50,14 +46,14 @@ class Evolution:
         else:
             self.population = self.toolbox.get_initial_population()
 
-        # set the fitness of every indiviual to 0
+        # set the fitness of every individual to 0
         for individual in self.population:
             individual.fitness.values = (0,)
 
         # initialize the evaluation class (runs game and NNW)
-        self.evaluate = Evaluate(self.population, neurons_disposition, population_size)
+        self.evaluate = Evaluate(neurons_disposition)
 
-    # register the evolutionary tools
+        # register the evolutionary tools
         self.toolbox.register("mate", tools.cxTwoPoint)
         self.toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=1, indpb=1)
         self.toolbox.register("select", tools.selTournament, tournsize=2)
@@ -71,9 +67,9 @@ class Evolution:
         with open(self.POPULATION_BACKUP_FILE, "wb") as file:
             pickle.dump(self.population, file)
 
-    def run_generation(self):
-        self.save_population_to_file()
-
-        self.population = eaSimpleAltered(
-            self.population, self.toolbox, self.crossover_probability, self.mutation_probability, 100
+    def run(self, crossover_probability: float, mutation_probability: float, generations: int):
+        self.population = algorithms.eaSimple(
+            population=self.population, toolbox=self.toolbox, cxpb=crossover_probability,
+            mutpb=mutation_probability, ngen=generations
         )
+        self.save_population_to_file()

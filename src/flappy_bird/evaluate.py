@@ -5,9 +5,8 @@ from typing import Sequence
 
 
 class Evaluate:
-    def __init__(self, population, neurons_disposition: Sequence[int],
-                 population_size: int):
-        self.game = Game(450, 800, population, population_size, neurons_disposition)
+    def __init__(self, neurons_disposition: Sequence[int]):
+        self.game = Game(450, 800, neurons_disposition)
 
     def handle_event(self, event: Event):
         if event.type == pygame.QUIT:
@@ -20,21 +19,11 @@ class Evaluate:
             if event.key == pygame.K_d:
                 self.game.should_draw = not self.game.should_draw
 
-    def run(self, population: list):
-
+    def run(self, individual):
         for event in pygame.event.get():
             self.handle_event(event)
 
-        self.game.run(population)
+        self.game.run(individual)
 
-        #print(np.shape(population))
-        #print(np.shape(self.game.bird_scores))
-        #for individual, fitness_value in zip(population, self.game.bird_scores):
-        #    individual.fitness.values = (fitness_value,)
-
-        fitnesses = []
-        for fitness_value in self.game.bird_scores:
-            fitnesses.append( (fitness_value,) )
-
-        return fitnesses
+        return self.game.score,
 

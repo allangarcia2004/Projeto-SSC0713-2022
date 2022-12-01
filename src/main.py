@@ -11,6 +11,6 @@ args = parser.parse_args()
 pygame.init()
 pygame.font.init()
 
-evolution = Evolution(0.3, 0.3, args.use_backup, [2, 3, 1], 900)
-evolution.run_generation()
+evolution = Evolution(args.use_backup, [2, 3, 1], 900)
+evolution.run(0.3, 0.3, 1000)
 
