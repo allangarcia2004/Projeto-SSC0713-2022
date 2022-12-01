@@ -3,6 +3,7 @@ import random
 from typing import Iterable, Sequence
 from deap import base, tools, creator, algorithms
 from flappy_bird.evaluate import Evaluate
+import numpy
 
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMax)
@@ -59,6 +60,9 @@ class Evolution:
         self.toolbox.register("select", tools.selTournament, tournsize=2)
         self.toolbox.register("evaluate", self.evaluate.run)
 
+        self.logbook: tools.Logbook
+        self.halloffame = tools.HallOfFame(20)
+
     def load_population_from_file(self):
         with open(self.POPULATION_BACKUP_FILE, "rb") as file:
             self.population = pickle.load(file)
@@ -68,8 +72,15 @@ class Evolution:
             pickle.dump(self.population, file)
 
     def run(self, crossover_probability: float, mutation_probability: float, generations: int):
-        self.population = algorithms.eaSimple(
+        stats = tools.Statistics(key=lambda ind: ind.fitness.values)
+        stats.register("avg", numpy.mean)
+        stats.register("std", numpy.std)
+        stats.register("min", numpy.min)
+        stats.register("max", numpy.max)
+
+        self.population, self.logbook = algorithms.eaSimple(
             population=self.population, toolbox=self.toolbox, cxpb=crossover_probability,
-            mutpb=mutation_probability, ngen=generations
+            mutpb=mutation_probability, ngen=generations, stats=stats,
+            halloffame=self.halloffame, verbose=True
         )
         self.save_population_to_file()
