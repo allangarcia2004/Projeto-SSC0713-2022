@@ -29,7 +29,7 @@ class Game:
         self.pipe_data = PipeSharedData(40, 140, self.world_data)
 
         self.players_population = PlayersPopulation(
-            neurons_disposition, identity
+            neurons_disposition, [identity, identity]
         )
 
         self.pipe: Pipe = None
@@ -73,9 +73,19 @@ class Game:
         self.bird.update()
         self.pipe.update()
 
+    def handle_event(self, event: Event):
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_k:
+                self.wait_for_clock = not self.wait_for_clock
+            if event.key == pygame.K_d:
+                self.should_draw = not self.should_draw
+
     def run(self, individual):
         self.reset()
         while not self.closed:
+
+            for event in pygame.event.get():
+                self.handle_event(event)
 
             if self.wait_for_clock:
                 self.clock.tick(60)

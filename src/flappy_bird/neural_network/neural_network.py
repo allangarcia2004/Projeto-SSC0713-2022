@@ -12,9 +12,9 @@ class PlayersPopulation:
     JUMP_THRESHOLD = 0.5
 
     def __init__(self, neurons_disposition: Sequence[int],
-                 activation_function: Callable):
+                 activation_functions: Sequence[Callable]):
         self.neurons_disposition = neurons_disposition
-        self.activation_function = activation_function
+        self.activation_functions = activation_functions
 
         self.weights_shapes: List[Tuple[int, int]] = []
         self.biases_lengths: List[int] = []
@@ -51,9 +51,10 @@ class PlayersPopulation:
         result = np.reshape(input_data, (self.neurons_disposition[0], 1))
 
         weights, bias = self.deserialize_arrays_from_individual(individual)
-        for layer_weights, layer_biases, in zip(weights, bias):
+        for layer_weights, layer_biases, activation_function \
+                in zip(weights, bias, self.activation_functions):
             mul = np.matmul(layer_weights, result)
-            result = self.activation_function(mul + layer_biases)
+            result = activation_function(mul + layer_biases)
 
         return result
 

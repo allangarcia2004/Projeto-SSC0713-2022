@@ -11,6 +11,8 @@ args = parser.parse_args()
 pygame.init()
 pygame.font.init()
 
-evolution = Evolution(args.use_backup, [2, 3, 1], 900)
-evolution.run(0.3, 0.3, 1000)
+evolution = Evolution(args.use_backup, [2, 3, 1], population_size=900,
+                      tournament_size=90)
+evolution.run(crossover_probability=0.3, mutation_probability=0.5,
+              generations=1)
 

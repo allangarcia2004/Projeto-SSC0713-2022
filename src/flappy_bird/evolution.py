@@ -1,6 +1,6 @@
 import pickle
 import random
-from typing import Iterable, Sequence
+from typing import Sequence
 from deap import base, tools, creator, algorithms
 from flappy_bird.evaluate import Evaluate
 import numpy
@@ -11,8 +11,11 @@ creator.create("Individual", list, fitness=creator.FitnessMax)
 
 class Evolution:
     POPULATION_BACKUP_FILE = "population.backup"
+    HALL_OF_FAME_FILE = "hall_of_fame.pkl"
+    LOGBOOK_FILE = "logbook.pkl"
 
-    def __init__(self, use_backup: bool, neurons_disposition: Sequence[int], population_size: int):
+    def __init__(self, use_backup: bool, neurons_disposition: Sequence[int],
+                 population_size: int, tournament_size: int):
 
         self.population_size = population_size
 
@@ -57,11 +60,11 @@ class Evolution:
         # register the evolutionary tools
         self.toolbox.register("mate", tools.cxTwoPoint)
         self.toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=1, indpb=1)
-        self.toolbox.register("select", tools.selTournament, tournsize=2)
+        self.toolbox.register("select", tools.selTournament, tournsize=tournament_size)
         self.toolbox.register("evaluate", self.evaluate.run)
 
         self.logbook: tools.Logbook
-        self.halloffame = tools.HallOfFame(20)
+        self.hall_of_fame = tools.HallOfFame(20)
 
     def load_population_from_file(self):
         with open(self.POPULATION_BACKUP_FILE, "rb") as file:
@@ -70,6 +73,12 @@ class Evolution:
     def save_population_to_file(self):
         with open(self.POPULATION_BACKUP_FILE, "wb") as file:
             pickle.dump(self.population, file)
+
+    def save_hall_of_fame_to_file(self):
+        pickle.dump(self.hall_of_fame, open(self.HALL_OF_FAME_FILE, "wb"))
+
+    def save_logbook_to_file(self):
+        pickle.dump(self.logbook, open(self.LOGBOOK_FILE, "wb"))
 
     def run(self, crossover_probability: float, mutation_probability: float, generations: int):
         stats = tools.Statistics(key=lambda ind: ind.fitness.values)
@@ -81,6 +90,9 @@ class Evolution:
         self.population, self.logbook = algorithms.eaSimple(
             population=self.population, toolbox=self.toolbox, cxpb=crossover_probability,
             mutpb=mutation_probability, ngen=generations, stats=stats,
-            halloffame=self.halloffame, verbose=True
+            halloffame=self.hall_of_fame, verbose=True
         )
+
         self.save_population_to_file()
+        self.save_hall_of_fame_to_file()
+        self.save_logbook_to_file()
