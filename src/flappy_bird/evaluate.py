@@ -27,11 +27,6 @@ class Evaluate:
 
         self.game.run(population)
 
-        #print(np.shape(population))
-        #print(np.shape(self.game.bird_scores))
-        #for individual, fitness_value in zip(population, self.game.bird_scores):
-        #    individual.fitness.values = (fitness_value,)
-
         fitnesses = []
         for fitness_value in self.game.bird_scores:
             fitnesses.append( (fitness_value,) )

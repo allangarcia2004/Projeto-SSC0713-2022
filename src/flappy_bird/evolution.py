@@ -75,5 +75,6 @@ class Evolution:
         self.save_population_to_file()
 
         self.population = eaSimpleAltered(
-            self.population, self.toolbox, self.crossover_probability, self.mutation_probability, 100
+            population=self.population, toolbox=self.toolbox, cxpb=self.crossover_probability,
+            mutpb=self.mutation_probability, ngen=100
         )
