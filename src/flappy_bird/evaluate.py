@@ -1,4 +1,5 @@
 from flappy_bird.gaming import Game
+import numpy as np
 
 
 class Evaluate:
@@ -8,4 +9,4 @@ class Evaluate:
     def run(self, individual):
         self.game.run(individual)
 
-        return self.game.score,
+        return self.game.pipes_bypassed, self.game.frames_loaded

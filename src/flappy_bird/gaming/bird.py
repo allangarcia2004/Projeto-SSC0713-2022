@@ -8,6 +8,8 @@ from flappy_bird.gaming.world import WorldSharedData
 
 
 class BirdSharedData:
+    FRAMES_THRESHOLD = 5000
+
     def __init__(self, radius: float, bump_speed: float, horizontal_position: int, world_data: WorldSharedData):
         self.radius = radius
         self.bump_speed = bump_speed
@@ -21,11 +23,16 @@ class Bird:
         self.pos = Vector2(self.shared_data.horizontal_position, self.shared_data.world_data.screen_size.y // 2)
         self.vel = Vector2(0, 0)
         self.alive = True
+        self.frames_without_dashing = 0
 
     def update(self):
+        self.frames_without_dashing += 1
+        if self.frames_without_dashing > 100:
+            self.alive = False
         if self.alive:
             self.vel.y += self.shared_data.world_data.gravity
-        self.pos += self.vel
+            self.pos += self.vel
+            self.vel.x = 0
 
     def draw(self):
         pygame.draw.circle(
@@ -37,6 +44,10 @@ class Bird:
 
     def jump(self):
         self.vel.y = -self.shared_data.bump_speed
+
+    def dash(self):
+        self.frames_without_dashing = 0
+        self.vel.x = self.shared_data.bump_speed//5
 
     def collided_with_pipe(self, pipe: Pipe):
         collided_top_rect = collided_circle_rect(self.pos, self.shared_data.radius, pipe.top_rect)

@@ -10,6 +10,7 @@ def get_slice(sequence: Sequence, first_index: int, length: int):
 
 class PlayersPopulation:
     JUMP_THRESHOLD = 0.5
+    DASH_THRESHOLD = 0.5
 
     def __init__(self, neurons_disposition: Sequence[int],
                  activation_functions: Sequence[Callable]):
@@ -58,5 +59,6 @@ class PlayersPopulation:
 
         return result
 
-    def should_jump(self, individual: Sequence[float], input_data):
-        return self.feed_forward(individual, input_data) >= self.JUMP_THRESHOLD
+    def should_move(self, individual: Sequence[float], input_data):
+        should_jump, should_dash = self.feed_forward(individual, input_data)
+        return should_jump >= self.JUMP_THRESHOLD, should_dash >= self.DASH_THRESHOLD

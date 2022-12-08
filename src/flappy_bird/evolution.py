@@ -5,7 +5,7 @@ from deap import base, tools, creator, algorithms
 from flappy_bird.evaluate import Evaluate
 import numpy
 
-creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+creator.create("FitnessMax", base.Fitness, weights=(1.0,-1.0))
 creator.create("Individual", list, fitness=creator.FitnessMax)
 
 
@@ -52,7 +52,7 @@ class Evolution:
 
         # set the fitness of every individual to 0
         for individual in self.population:
-            individual.fitness.values = (0,)
+            individual.fitness.values = (0,0)
 
         # initialize the evaluation class (runs game and NNW)
         self.evaluate = Evaluate(neurons_disposition)

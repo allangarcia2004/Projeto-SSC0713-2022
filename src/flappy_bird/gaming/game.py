@@ -36,12 +36,14 @@ class Game:
         self.bird_scores: List[int] = None
         self.bird = Bird(self.bird_data)
         self.bird.alive = True
-        self.score = 0
+        self.frames_loaded = 0
+        self.pipes_bypassed = 0
 
         self.statistics_data = []
         self.wait_for_clock = False
         self.closed = False
         self.should_draw = True
+
 
     def render_text(self, text: str, position: Tuple[int, int]):
         text_surface = self.font.render(text, False, Color.WHITE, Color.BLACK)
@@ -54,7 +56,7 @@ class Game:
         pygame.display.flip()
 
     def reset(self):
-        self.score = 0
+        self.frames_loaded = 0
         self.bird = Bird(self.bird_data)
         self.pipe = Pipe(self.pipe_data)
         self.bird.alive = True
@@ -66,11 +68,19 @@ class Game:
             if self.bird.died_now(self.pipe):
                 self.bird.alive = False
             else:
-                if self.players_population.should_jump(individual, neural_inputs):
+                jump, dash = self.players_population.should_move(individual, neural_inputs)
+                if jump:
                     self.bird.jump()
-                self.score += 1
+                if dash:
+                    self.bird.dash()
+                self.frames_loaded += 1
 
+        self.world_data.horizontal_velocity = self.bird.vel.x
         self.bird.update()
+
+        if self.pipe.x_pos == self.pipe.initial_position:
+            self.pipes_bypassed += 1
+
         self.pipe.update()
 
     def handle_event(self, event: Event):
