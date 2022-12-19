@@ -12,6 +12,7 @@ from flappy_bird.gaming.pipe import Pipe, PipeSharedData
 from flappy_bird.gaming.world import WorldSharedData
 from flappy_bird.neural_network import PlayersPopulation
 from flappy_bird.neural_network.activation_functions import identity
+from flappy_bird.neural_network.activation_functions import sigmoid
 
 
 class Game:
@@ -29,7 +30,7 @@ class Game:
         self.pipe_data = PipeSharedData(40, 140, self.world_data)
 
         self.players_population = PlayersPopulation(
-            neurons_disposition, [identity, identity]
+            neurons_disposition, [identity, sigmoid]
         )
 
         self.pipe: Pipe = None
@@ -57,6 +58,7 @@ class Game:
 
     def reset(self):
         self.frames_loaded = 0
+        self.pipes_bypassed = 0
         self.bird = Bird(self.bird_data)
         self.pipe = Pipe(self.pipe_data)
         self.bird.alive = True
@@ -67,21 +69,22 @@ class Game:
         if self.bird.alive:
             if self.bird.died_now(self.pipe):
                 self.bird.alive = False
+            elif self.pipe.frames_without_dashing > 50:
+                self.bird.alive = False
             else:
-                jump, dash = self.players_population.should_move(individual, neural_inputs)
-                if jump:
+                jump_decision, dash_value = self.players_population.should_move(individual, neural_inputs)
+                if jump_decision:
                     self.bird.jump()
-                if dash:
-                    self.bird.dash()
+                self.pipe.dash(dash_value)
                 self.frames_loaded += 1
 
-        self.world_data.horizontal_velocity = self.bird.vel.x
         self.bird.update()
+        self.pipe.update()
 
-        if self.pipe.x_pos == self.pipe.initial_position:
+        if self.pipe.has_been_passed(self.bird):
             self.pipes_bypassed += 1
 
-        self.pipe.update()
+
 
     def handle_event(self, event: Event):
         if event.type == pygame.KEYDOWN:

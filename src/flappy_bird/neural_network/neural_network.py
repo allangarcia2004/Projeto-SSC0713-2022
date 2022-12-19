@@ -60,5 +60,5 @@ class PlayersPopulation:
         return result
 
     def should_move(self, individual: Sequence[float], input_data):
-        should_jump, should_dash = self.feed_forward(individual, input_data)
-        return should_jump >= self.JUMP_THRESHOLD, should_dash >= self.DASH_THRESHOLD
+        should_jump, dash_velocity = self.feed_forward(individual, input_data)
+        return should_jump >= self.JUMP_THRESHOLD, abs(dash_velocity)

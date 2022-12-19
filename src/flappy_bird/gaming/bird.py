@@ -23,12 +23,8 @@ class Bird:
         self.pos = Vector2(self.shared_data.horizontal_position, self.shared_data.world_data.screen_size.y // 2)
         self.vel = Vector2(0, 0)
         self.alive = True
-        self.frames_without_dashing = 0
 
     def update(self):
-        self.frames_without_dashing += 1
-        if self.frames_without_dashing > 100:
-            self.alive = False
         if self.alive:
             self.vel.y += self.shared_data.world_data.gravity
             self.pos += self.vel
@@ -44,10 +40,6 @@ class Bird:
 
     def jump(self):
         self.vel.y = -self.shared_data.bump_speed
-
-    def dash(self):
-        self.frames_without_dashing = 0
-        self.vel.x = self.shared_data.bump_speed//5
 
     def collided_with_pipe(self, pipe: Pipe):
         collided_top_rect = collided_circle_rect(self.pos, self.shared_data.radius, pipe.top_rect)
