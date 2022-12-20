@@ -16,7 +16,9 @@ class Evolution:
     LOGBOOK_FILE = "logbook.pkl"
 
     def __init__(self, use_backup: bool, neurons_disposition: Sequence[int],
-                 population_size: int, hall_of_fame_size: int, tournament_size: int):
+                 population_size: int, hall_of_fame_size: int, tournament_size: int,
+                 crossover_probability: float, mutation_probability: float,
+                 generations: int):
         """
         :param use_backup: A bool to determine if a population from previous runs
                            should be used as the initial population.
@@ -28,6 +30,9 @@ class Evolution:
         """
 
         self.population_size = population_size
+        self.crossover_probability = crossover_probability
+        self.mutation_probability = mutation_probability
+        self.generations = generations
 
         # determines how many genes a individual will have based on the neural disposition
         self.genes_count_by_individual = 0
@@ -99,7 +104,7 @@ class Evolution:
 
 
 
-    def run(self, crossover_probability: float, mutation_probability: float, generations: int):
+    def run(self):
         """
         Runs 'deap.algorithms.eaSimple' with the mate method as 'deap.tools.cxTwoPoint', the mutate method as 'deap.tools.mutGaussian', with mu=0, sigma=1 and indpb=1, the select method as 'deap.tools.selTournament' and evaluate method as the modified flappy bird game developed, in witch the individual is interpreted as a neural network.
 
@@ -114,8 +119,8 @@ class Evolution:
         stats.register("max", maximal, weights=creator.FitnessMax.weights)
 
         self.population, self.logbook = algorithms.eaSimple(
-            population=self.population, toolbox=self.toolbox, cxpb=crossover_probability,
-            mutpb=mutation_probability, ngen=generations, stats=stats,
+            population=self.population, toolbox=self.toolbox, cxpb=self.crossover_probability,
+            mutpb=self.mutation_probability, ngen=self.generations, stats=stats,
             halloffame=self.hall_of_fame, verbose=True
         )
 
