@@ -1,10 +1,10 @@
 import pygame
 from pygame import Vector2
 
-from flappy_bird.gaming.collision import collided_circle_rect
-from flappy_bird.gaming.colors import Color
-from flappy_bird.gaming.pipe import Pipe
-from flappy_bird.gaming.world import WorldSharedData
+from evolution.evaluate.gaming.collision import collided_circle_rect
+from evolution.evaluate.gaming.colors import Color
+from evolution.evaluate.gaming.pipe import Pipe
+from evolution.evaluate.gaming.world import WorldSharedData
 
 
 class BirdSharedData:

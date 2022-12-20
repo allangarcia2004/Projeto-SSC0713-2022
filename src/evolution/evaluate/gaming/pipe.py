@@ -3,8 +3,8 @@ from random import randint
 import pygame
 from pygame import Rect
 
-from flappy_bird.gaming.colors import Color
-from flappy_bird.gaming.world import WorldSharedData
+from evolution.evaluate.gaming.colors import Color
+from evolution.evaluate.gaming.world import WorldSharedData
 
 
 class PipeSharedData:
@@ -44,11 +44,14 @@ class Pipe:
         self.bypassed = True
         return True
 
-    def dash(self, dash_value: float):
-        horizontal_velocity = int(10*dash_value)
+    def dash(self, dash_velocity: float):
+        horizontal_velocity = int(20*dash_velocity)
         self.x_pos -= horizontal_velocity
+
         if horizontal_velocity == 0:
             self.frames_without_dashing += 1
+        else:
+            self.frames_without_dashing = 0
 
     def get_top_rect(self):
         return Rect(self.x_pos, 0, self.shared_data.width, self.gap_y_pos)

@@ -6,13 +6,13 @@ import pygame
 from pygame import Vector2
 from pygame.event import Event
 
-from flappy_bird.gaming.bird import Bird, BirdSharedData
-from flappy_bird.gaming.colors import Color
-from flappy_bird.gaming.pipe import Pipe, PipeSharedData
-from flappy_bird.gaming.world import WorldSharedData
-from flappy_bird.neural_network import PlayersPopulation
-from flappy_bird.neural_network.activation_functions import identity
-from flappy_bird.neural_network.activation_functions import sigmoid
+from evolution.evaluate.gaming.bird import Bird, BirdSharedData
+from evolution.evaluate.gaming.colors import Color
+from evolution.evaluate.gaming.pipe import Pipe, PipeSharedData
+from evolution.evaluate.gaming.world import WorldSharedData
+from evolution.evaluate.neural_network import PlayersPopulation
+from evolution.evaluate.neural_network.activation_functions import identity
+from evolution.evaluate.neural_network.activation_functions import sigmoid
 
 
 class Game:
@@ -72,10 +72,10 @@ class Game:
             elif self.pipe.frames_without_dashing > 50:
                 self.bird.alive = False
             else:
-                jump_decision, dash_value = self.players_population.should_move(individual, neural_inputs)
+                jump_decision, dash_velocity = self.players_population.should_move(individual, neural_inputs)
                 if jump_decision:
                     self.bird.jump()
-                self.pipe.dash(dash_value)
+                self.pipe.dash(dash_velocity)
                 self.frames_loaded += 1
 
         self.bird.update()

@@ -1,5 +1,4 @@
-from flappy_bird.gaming import Game
-import numpy as np
+from evolution.evaluate.gaming import Game
 
 
 class Evaluate:
