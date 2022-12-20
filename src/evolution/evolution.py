@@ -2,12 +2,8 @@ import pickle
 import random
 from typing import Sequence
 from deap import base, tools, creator, algorithms
-from evolution.evaluate import Evaluate
-from evolution.statistics_functions import maximal, minimal, avg, std
-
-
-creator.create("FitnessMax", base.Fitness, weights=(100.0,-1.0))
-creator.create("Individual", list, fitness=creator.FitnessMax)
+from .evaluate import Evaluate
+from .statistics_functions import maximal, minimal, avg, std
 
 
 class Evolution:
@@ -27,6 +23,9 @@ class Evolution:
         :param hall_of_fame_size: How many individuals the hall of fame has.
         :param tournament_size: Used by the selection algorithm, selTournament.
                                 Determines how many individuals are be in each tournament.
+        :param crossover_probability: Crossover probability, between 0 and 1
+        :param mutation_probability: Mutation probability, between 0 and 1
+        :param generations: Number of generations
         """
 
         self.population_size = population_size
@@ -40,6 +39,14 @@ class Evolution:
             size_layer_in = neurons_disposition[i]
             size_layer_out = neurons_disposition[i + 1]
             self.genes_count_by_individual += size_layer_in * size_layer_out + size_layer_out
+
+        # creates the class Fitness
+        # first fitness component is how much obstacles the bird bypassed
+        # and the second one is how much frames were loaded during his lifetime
+        creator.create("FitnessMulti", base.Fitness, weights=(100.0, -1.0))
+
+        # creates the class Individual
+        creator.create("Individual", list, fitness=creator.FitnessMulti)
 
         # makes the toolbox to generate the initial population randomly
         self.toolbox = base.Toolbox()
@@ -74,7 +81,7 @@ class Evolution:
 
         # registers the evolutionary tools
         self.toolbox.register("mate", tools.cxTwoPoint)
-        self.toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=1, indpb=1)
+        self.toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=1, indpb=0.9)
         self.toolbox.register("select", tools.selTournament, tournsize=tournament_size)
         self.toolbox.register("evaluate", self.evaluate.run)
 
@@ -105,25 +112,23 @@ class Evolution:
 
 
     def run(self):
-        """
-        Runs 'deap.algorithms.eaSimple' with the mate method as 'deap.tools.cxTwoPoint', the mutate method as 'deap.tools.mutGaussian', with mu=0, sigma=1 and indpb=1, the select method as 'deap.tools.selTournament' and evaluate method as the modified flappy bird game developed, in witch the individual is interpreted as a neural network.
+        """ Runs 'deap.algorithms.eaSimple' with the mate method as 'deap.tools.cxTwoPoint', the mutate method as 'deap.tools.mutGaussian', with mu=0, sigma=1 and indpb=1, the select method as 'deap.tools.selTournament' and evaluate method as the modified flappy bird game developed, in witch the individual is interpreted as a neural network. """
 
-        :param crossover_probability: Crossover probability, between 0 and 1
-        :param mutation_probability: Mutation probability, between 0 and 1
-        :param generations: Number of generations
-        """
+        # registers the methods used to calculate the statistics
         stats = tools.Statistics(key=lambda ind: ind.fitness.values)
         stats.register("avg", avg)
         stats.register("std", std)
-        stats.register("min", minimal, weights=creator.FitnessMax.weights)
-        stats.register("max", maximal, weights=creator.FitnessMax.weights)
+        stats.register("min", minimal, weights=creator.FitnessMulti.weights)
+        stats.register("max", maximal, weights=creator.FitnessMulti.weights)
 
+        # runs the algorithm from deap
         self.population, self.logbook = algorithms.eaSimple(
             population=self.population, toolbox=self.toolbox, cxpb=self.crossover_probability,
             mutpb=self.mutation_probability, ngen=self.generations, stats=stats,
-            halloffame=self.hall_of_fame, verbose=True
+            halloffame=self.hall_of_fame
         )
 
+        # saves information to files
         self.save_population_to_file()
         self.save_hall_of_fame_to_file()
         self.save_logbook_to_file()

@@ -1,5 +1,4 @@
-from evolution.evaluate.gaming import Game
-
+from .gaming import Game
 
 class Evaluate:
     def __init__(self, neurons_disposition):
