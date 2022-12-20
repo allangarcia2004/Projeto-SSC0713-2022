@@ -1,13 +1,15 @@
 import pygame
 from pygame import Vector2
 
-from flappy_bird.gaming.collision import collided_circle_rect
-from flappy_bird.gaming.colors import Color
-from flappy_bird.gaming.pipe import Pipe
-from flappy_bird.gaming.world import WorldSharedData
+from evolution.evaluate.gaming.collision import collided_circle_rect
+from evolution.evaluate.gaming.colors import Color
+from evolution.evaluate.gaming.pipe import Pipe
+from evolution.evaluate.gaming.world import WorldSharedData
 
 
 class BirdSharedData:
+    FRAMES_THRESHOLD = 5000
+
     def __init__(self, radius: float, bump_speed: float, horizontal_position: int, world_data: WorldSharedData):
         self.radius = radius
         self.bump_speed = bump_speed
@@ -25,7 +27,8 @@ class Bird:
     def update(self):
         if self.alive:
             self.vel.y += self.shared_data.world_data.gravity
-        self.pos += self.vel
+            self.pos += self.vel
+            self.vel.x = 0
 
     def draw(self):
         pygame.draw.circle(

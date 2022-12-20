@@ -3,8 +3,8 @@ from random import randint
 import pygame
 from pygame import Rect
 
-from flappy_bird.gaming.colors import Color
-from flappy_bird.gaming.world import WorldSharedData
+from evolution.evaluate.gaming.colors import Color
+from evolution.evaluate.gaming.world import WorldSharedData
 
 
 class PipeSharedData:
@@ -27,12 +27,31 @@ class Pipe:
 
         self.initial_position = self.shared_data.world_data.screen_size.x
         self.reset_positions()
+        self.bypassed = False
+        self.frames_without_dashing = 0
 
     def reset_positions(self):
+        self.frames_without_dashing = 0
+        self.bypassed = False
         self.x_pos = self.initial_position
         self.gap_y_pos = randint(
             self.MIN_LENGTH,
             int(self.shared_data.world_data.screen_size.y - self.shared_data.gap_size - self.MIN_LENGTH))
+
+    def has_been_passed(self, bird):
+        if self.bypassed or self.x_pos < bird.pos.x:
+            return False
+        self.bypassed = True
+        return True
+
+    def dash(self, dash_velocity: float):
+        horizontal_velocity = int(20*dash_velocity)
+        self.x_pos -= horizontal_velocity
+
+        if horizontal_velocity == 0:
+            self.frames_without_dashing += 1
+        else:
+            self.frames_without_dashing = 0
 
     def get_top_rect(self):
         return Rect(self.x_pos, 0, self.shared_data.width, self.gap_y_pos)
@@ -43,7 +62,7 @@ class Pipe:
         return Rect(self.x_pos, top, self.shared_data.width, height)
 
     def update(self):
-        self.x_pos -= self.shared_data.world_data.horizontal_velocity
+        #self.x_pos -= self.shared_data.world_data.horizontal_velocity
         if self.x_pos + self.shared_data.width < 0:
             self.reset_positions()
         self.top_rect = self.get_top_rect()
