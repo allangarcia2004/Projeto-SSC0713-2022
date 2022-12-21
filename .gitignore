@@ -3,3 +3,6 @@ venv
 .idea
 __pycache__
 .tool-versions
+hall_of_fame.pkl
+population.backup
+logs

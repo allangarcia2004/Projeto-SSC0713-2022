@@ -9,12 +9,11 @@ from .statistics_functions import maximal, minimal, avg, std
 class Evolution:
     POPULATION_BACKUP_FILE = "population.backup"
     HALL_OF_FAME_FILE = "hall_of_fame.pkl"
-    LOGBOOK_FILE = "logbook.pkl"
 
     def __init__(self, use_backup: bool, neurons_disposition: Sequence[int],
                  population_size: int, hall_of_fame_size: int, tournament_size: int,
                  crossover_probability: float, mutation_probability: float,
-                 generations: int):
+                 generations: int, fitness_weights: tuple[float, float], logbook_file: str):
         """
         :param use_backup: A bool to determine if a population from previous runs
                            should be used as the initial population.
@@ -32,6 +31,7 @@ class Evolution:
         self.crossover_probability = crossover_probability
         self.mutation_probability = mutation_probability
         self.generations = generations
+        self.logbook_file = logbook_file
 
         # determines how many genes a individual will have based on the neural disposition
         self.genes_count_by_individual = 0
@@ -43,7 +43,7 @@ class Evolution:
         # creates the class Fitness
         # first fitness component is how much obstacles the bird bypassed
         # and the second one is how much frames were loaded during his lifetime
-        creator.create("FitnessMulti", base.Fitness, weights=(100.0, -1.0))
+        creator.create("FitnessMulti", base.Fitness, weights=fitness_weights)
 
         # creates the class Individual
         creator.create("Individual", list, fitness=creator.FitnessMulti)
@@ -74,7 +74,7 @@ class Evolution:
 
         # sets the fitness of every individual to 0
         for individual in self.population:
-            individual.fitness.values = (0,0)
+            individual.fitness.values = (0, 0)
 
         # initializes the class used for evaluation
         self.evaluate = Evaluate(neurons_disposition)
@@ -103,23 +103,23 @@ class Evolution:
 
     def save_hall_of_fame_to_file(self):
         """ Saves hall of fame to file. """
-        pickle.dump(self.hall_of_fame, open(self.HALL_OF_FAME_FILE, "wb"))
+        with open(self.HALL_OF_FAME_FILE, "wb") as file:
+            pickle.dump(self.hall_of_fame, file)
 
     def save_logbook_to_file(self):
         """ Saves logbook to file. """
-        pickle.dump(self.logbook, open(self.LOGBOOK_FILE, "wb"))
-
-
+        with open(self.logbook_file, "wb") as file:
+            pickle.dump(self.logbook, file)
 
     def run(self):
         """ Runs 'deap.algorithms.eaSimple' with the mate method as 'deap.tools.cxTwoPoint', the mutate method as 'deap.tools.mutGaussian', with mu=0, sigma=1 and indpb=1, the select method as 'deap.tools.selTournament' and evaluate method as the modified flappy bird game developed, in witch the individual is interpreted as a neural network. """
 
         # registers the methods used to calculate the statistics
-        stats = tools.Statistics(key=lambda ind: ind.fitness.values)
+        stats = tools.Statistics()
         stats.register("avg", avg)
         stats.register("std", std)
-        stats.register("min", minimal, weights=creator.FitnessMulti.weights)
-        stats.register("max", maximal, weights=creator.FitnessMulti.weights)
+        stats.register("min", minimal)  # , weights=creator.FitnessMulti.weights)
+        stats.register("max", maximal)  # , weights=creator.FitnessMulti.weights)
 
         # runs the algorithm from deap
         self.population, self.logbook = algorithms.eaSimple(

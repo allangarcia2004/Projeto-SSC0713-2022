@@ -43,7 +43,7 @@ class Game:
         self.statistics_data = []
         self.wait_for_clock = False
         self.closed = False
-        self.should_draw = True
+        self.should_draw = False
 
 
     def render_text(self, text: str, position: Tuple[int, int]):
